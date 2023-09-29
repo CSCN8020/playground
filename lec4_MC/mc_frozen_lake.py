@@ -16,6 +16,7 @@ class Agent:
         self.target_policy = target_policy
         self.pi = np.ones(self.num_states, dtype=int)
         self.gamma = gamma
+        self.env = env
 
     def run_MC(self, num_episodes):
         for episode in range(num_episodes):
@@ -35,15 +36,14 @@ class Agent:
         episode_states = []
         episode_actions = []
         episode_rewards = []
-        state, _ = env.reset()
-        done = False
+        state, _ = self.env.reset()
         done = False
         while not done:
             # Random choice from behavior policy
             action = np.random.choice(range(self.num_actions), p=self.behavior_policy[state])
 
             # take a step
-            next_state, reward, done, _, _ = env.step(action)
+            next_state, reward, done, _, _ = self.env.step(action)
             episode_states.append(state)
             episode_actions.append(action)
             episode_rewards.append(reward)
@@ -67,7 +67,6 @@ class Agent:
             self.update_cum_sum_weights(state, action, c)
             self.update_greedy_policy()
             if action != self.pi[state]:  # If the action was not taken by the target policy
-                # print("Not the same action: ", action, self.pi[state])
                 break
             W /= self.query_behavior_policy_action(state, action)  # Update the importance sampling ratio
 
@@ -105,60 +104,89 @@ class Agent:
     def query_behavior_policy_action(self, state, action):
         return self.behavior_policy[state, action]
 
+'''@brief transform the state value to a row and column in the environment
+'''
 def get_row_column(state):
     row = int(state/4)
     column = state - (row * 4)
     return row, column
-# Define the Blackjack environment
-env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=False)
-# Define the behavior policy (random policy for exploration)
-behavior_policy = np.ones((env.observation_space.n, env.action_space.n)) / env.action_space.n
-print(behavior_policy.shape)
 
-# Define the target policy (random)
-target_policy = np.ones((env.observation_space.n, env.action_space.n)) / env.action_space.n
 
-# Set hyperparameters
-num_episodes = 10000
-gamma = 0.9
-
-action_desc = ["<", "|", ">", "^"]
-
-# Apply off-policy Monte Carlo algorithm
-agent = Agent(env, behavior_policy, target_policy, gamma)
-Q, pi = agent.run_MC(num_episodes)
-
-# Print the estimated action-value function Q(s,a)
-print("Estimated Action-Value Function:")
-print(Q)
-
-# Print the target policy pi
-print("\nTarget Policy:")
-print(pi)
-i = 0
-pi_squ = []*4
-max_col = 0
-actions_desc = []
-for action in pi:
-    print("action pi: ", action)
-    actions_desc.append(action_desc[action])
-print(actions_desc)
-
-def generate_episode(agent):
-    env2 = gym.make('FrozenLake-v1',  desc=None, render_mode="rgb_array", map_name="4x4", is_slippery=False)
-    state, _ = env2.reset()
-    done = False
-    env2.render()
-    while not done:
-        # Random choice from behavior policy
-        action = int(agent.pi[state])
-        print(action)
-
-        # take a step
+'''@brief simulate the environment with the agents taught policy
+'''
+def simulate_episodes(agent, num_episodes=3):
+    env2 = gym.make('FrozenLake-v1',  desc=None, render_mode="human", map_name="4x4", is_slippery=False)
+    for _ in range(num_episodes):
+        done = False
+        state, _ = env2.reset()
         env2.render()
-        time.sleep(0.5)
-        next_state, _, done, _, _ = env2.step(action)
-        print(next_state, get_row_column(next_state))
-        state = next_state
+        while not done:
+            # Random choice from behavior policy
+            action = int(agent.pi[state])
+            # take a step
+            env2.render()
+            time.sleep(0.1)
+            next_state, _, done, _, _ = env2.step(action)
+            state = next_state
+        time.sleep(1.0)
 
-generate_episode(agent)
+def main():
+    # MODE = ["LEARN"|"LOAD"]
+    MODE = "LEARN"
+    NUM_EPISODES = 50000
+
+    # Define the Blackjack environment
+    env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=False)
+    
+    # Define the behavior policy (random policy for exploration)
+    behavior_policy = np.ones((env.observation_space.n, env.action_space.n)) / env.action_space.n
+
+    # Define the target policy (random)
+    target_policy = np.ones((env.observation_space.n, env.action_space.n)) / env.action_space.n
+
+    # Set hyperparameters
+    gamma = 0.9
+    action_desc = ["<", "|", ">", "^"]
+
+    # Apply off-policy Monte Carlo algorithm
+    agent = Agent(env, behavior_policy, target_policy, gamma)
+    if MODE == "LEARN":
+        Q, pi = agent.run_MC(NUM_EPISODES)
+    elif MODE == "LOAD":
+        # SAMPLE LEARNED POLICY -- Update after running for longer
+        Q = np.array(
+        [[0.531441,   0.59049   , 0.59049,    0.531441  ],
+        [0.531441,   0.        , 0.6561 ,    0.59049   ],
+        [0.59049 ,   0.72850953, 0.59049,    0.6561    ],
+        [0.6561  ,   0.        , 0.59049,    0.59049   ],
+        [0.59049 ,   0.6561    , 0.     ,    0.531441  ],
+        [0.      ,   0.        , 0.     ,    0.        ],
+        [0.      ,   0.81      , 0.     ,    0.6561    ],
+        [0.      ,   0.        , 0.     ,    0.        ],
+        [0.6561  ,   0.        , 0.729  ,    0.59049   ],
+        [0.6561  ,   0.81      , 0.81   ,    0.        ],
+        [0.729   ,   0.9       , 0.     ,    0.72855358],
+        [0.      ,   0.        , 0.     ,    0.        ],
+        [0.      ,   0.        , 0.     ,    0.        ],
+        [0.      ,   0.80928255, 0.9    ,    0.729     ],
+        [0.81    ,   0.9       , 1.     ,    0.81      ],
+        [0.      ,   0.        , 0.     ,    0.        ]])
+        agent.Q = Q
+        agent.update_greedy_policy()
+        pi = agent.pi
+    # Print the estimated action-value function Q(s,a)
+    print("Estimated Action-Value Function:")
+    print(Q)
+
+    # Print the target policy pi
+    print("\nTarget Policy:")
+    pi_mat = np.empty((env.action_space.n, env.action_space.n), dtype=str)
+    for i, action in enumerate(pi):
+        row, column = get_row_column(i)
+        pi_mat[row][column] = action_desc[action]
+    print(pi_mat)
+
+    simulate_episodes(agent, num_episodes=3)
+
+if __name__ == "__main__":
+    main()
