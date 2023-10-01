@@ -19,6 +19,9 @@ Notes:
 
 2. The solution may have a slightly different structure or more methods, this is meant to clarify the steps
 
+3. Important for usage, the gridlworld environment was isolated into a separate files (`value_iteration_agent.py` and `gridworld.py`) to allow for more flexibility of using it in your work.
+
+
 
 ## Directions
 
