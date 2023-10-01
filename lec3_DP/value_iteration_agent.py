@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import numpy as np
 from gridworld import GridWorld
 from value_iteration_agent import Agent
