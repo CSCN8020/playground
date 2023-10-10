@@ -27,7 +27,7 @@ class GridWorld():
             next_i, next_j = i, j
         
         done = self.is_terminal_state(next_i, next_j)
-        reward = self.reward[i, j]
+        reward = self.reward[next_i, next_j]
         return next_i, next_j, reward, done
     
     '''@brief Checks if a state is within the acceptable bounds of the environment
