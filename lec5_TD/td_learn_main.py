@@ -1,9 +1,10 @@
 import gym
-from td_agents import SarsaAgent, QLAgent
+from td_agents_solved import SarsaAgent, QLAgent
 
 def main(algorithm, num_episodes, gamma, alpha, epsilon):
     # Initialize the FrozenLake environment
     env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=False)
+    # env = gym.make('FrozenLake-v1', desc=None, render_mode="human", map_name="4x4", is_slippery=False)
     # Define the number of states and actions
     num_states = env.observation_space.n
     num_actions = env.action_space.n
@@ -22,7 +23,7 @@ def main(algorithm, num_episodes, gamma, alpha, epsilon):
 
     # Test (and visualize the learnt policys)
     env2 = gym.make('FrozenLake-v1', desc=None, render_mode="human", map_name="4x4", is_slippery=False)
-    agent.test(env2, 2, verbatim=True)
+    agent.test(env2, 5, verbose=True)
 
 if __name__ == "__main__":
     # Choose if you want to teach a QLearning/Sarsa agent
@@ -34,5 +35,5 @@ if __name__ == "__main__":
     epsilon = 0.3   # exploration factor
 
     # Set the number of episodes for learning
-    num_episodes = 5000
+    num_episodes = 10000
     main(algorithm, num_episodes, gamma, alpha, epsilon)

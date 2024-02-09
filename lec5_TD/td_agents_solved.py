@@ -14,22 +14,23 @@ class TDAgent:
         # Initialize Q-values for all state-action pairs
         self.q_values = np.zeros((num_states, num_actions))
 
-    '''@brief Chooses an action (index) using the current policy
+    '''@brief Chooses an action using the current policy
     '''
-    def select_action(self, state) -> int:
-        # TODO: Generate random value between 0 and 1
-        # TODO: compare random value to self.epsilon and choose greedy vs random action accordingly 
-        pass
+    def select_action(self, state):
+        # Epsilon-greedy policy
+        if np.random.rand() < self.epsilon:
+            return np.random.randint(self.num_actions)  # Random action with probability epsilon
+        else:
+            return self.select_greedy_action(state) # Greedy action with probability (1 - epsilon)
 
     '''@brief Returns the action that corresponds to the greedy policy
     '''
-    def select_greedy_action(self, state) -> int:
-        # TODO: Return the action that maximizes the q-value at the current state
-        pass
+    def select_greedy_action(self, state):
+        q_values_state = self.q_values[state]
+        return np.argmax(q_values_state) 
 
     '''@brief Updates the action-value function using 
         inputs: current state, action, reward, and next state and action
-        Implementation will vary between SARSA and QLearning
     '''
     def update_q_values(self, state, action, reward, next_state, next_action):
         pass
@@ -88,11 +89,7 @@ class SarsaAgent(TDAgent):
         inputs: current state, action, reward, and next state and action
     '''
     def update_q_values(self, state, action, reward, next_state, next_action):
-        # SARSA update rule
-        current_q_value = self.q_values[state, action]
-        next_q_value = self.q_values[next_state, next_action]
-        target = reward + self.gamma * next_q_value
-        self.q_values[state, action] += self.alpha * (target - current_q_value)
+        # TODO: Apply SARSA update rule to update Q(s,a)
 
 
 class QLAgent(TDAgent):
@@ -103,8 +100,4 @@ class QLAgent(TDAgent):
         inputs: current state, action, reward, and next state and action
     '''
     def update_q_values(self, state, action, reward, next_state, next_action):
-        # QLearning update rule
-        current_q_value = self.q_values[state, action]
-        max_next_q_value = np.max(self.q_values[next_state])
-        target = reward + self.gamma * max_next_q_value
-        self.q_values[state, action] += self.alpha * (target - current_q_value)
+        # TODO: Apply QLearning update rule to update Q(s,a)
