@@ -89,7 +89,11 @@ class SarsaAgent(TDAgent):
         inputs: current state, action, reward, and next state and action
     '''
     def update_q_values(self, state, action, reward, next_state, next_action):
-        # TODO: Apply SARSA update rule to update Q(s,a)
+        # SARSA update rule
+        current_q_value = self.q_values[state, action]
+        next_q_value = self.q_values[next_state, next_action]
+        target = reward + self.gamma * next_q_value
+        self.q_values[state, action] += self.alpha * (target - current_q_value)
 
 
 class QLAgent(TDAgent):
@@ -100,4 +104,8 @@ class QLAgent(TDAgent):
         inputs: current state, action, reward, and next state and action
     '''
     def update_q_values(self, state, action, reward, next_state, next_action):
-        # TODO: Apply QLearning update rule to update Q(s,a)
+        # QLearning update rule
+        current_q_value = self.q_values[state, action]
+        max_next_q_value = np.max(self.q_values[next_state])
+        target = reward + self.gamma * max_next_q_value
+        self.q_values[state, action] += self.alpha * (target - current_q_value)
