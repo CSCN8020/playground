@@ -1,8 +1,8 @@
 import numpy as np
 
 # MS PACMAN
-def blend_images(images, blend):
-    avg_image = np.expand_dims(np.zeros((105, 80, 1), np.float64), axis=0)
+def blend_images(images, image_shape, blend):
+    avg_image = np.expand_dims(np.zeros(image_shape, np.float64), axis=0)
 
     for image in images:
         avg_image += image
@@ -15,10 +15,10 @@ def blend_images(images, blend):
 # Helpful preprocessing taken from github.com/ageron/tiny-dqn
 def process_frame(frame):
     # RGB of mspacman
-    mspacman_color = np.array([210, 164, 74]).mean()
+    # mspacman_color = np.array([210, 164, 74]).mean()
     frame_shape = frame.shape
     img = downsample(frame)    # Crop (the bottom) and downsize (by 2)
-    img[img==mspacman_color] = 0 # Improve contrast by making pacman white
+    # img[img==mspacman_color] = 0 # Improve contrast by making pacman white
     img = to_grayscale(img)       # Convert to greyscale by averaging the RGB values
     img = (img - 128) / 128 - 1  # Normalize from -1 to 1.
     
