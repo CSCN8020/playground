@@ -15,15 +15,15 @@ class DQN_Agent:
         self.memory = deque(maxlen=5000)
         
         # Hyperparameters
-        self.gamma = 1.0            # Discount rate
+        self.gamma = 0.95            # Discount rate
         self.epsilon = 1.0          # Exploration rate
-        self.epsilon_min = 0.1      # Minimal exploration rate (epsilon-greedy)
+        self.epsilon_min = 0.05      # Minimal exploration rate (epsilon-greedy)
         self.epsilon_decay = 0.995  # Decay rate for epsilon
-        self.update_rate = 1000     # Number of steps until updating the target network
+        self.update_rate = 10000     # Number of steps until updating the target network
         
         # Construct DQN models
-        self.model = self._build_model()
-        self.target_model = self._build_model()
+        self.model = self._build_model() # Q Network
+        self.target_model = self._build_model() # Target Network
         self.target_model.set_weights(self.model.get_weights())
         self.model.summary()
 
@@ -48,7 +48,7 @@ class DQN_Agent:
         model.add(Dense(512, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         
-        model.compile(loss='mse', optimizer=Adam())
+        model.compile(loss='huber_loss', optimizer=Adam())
         return model
 
     #
@@ -65,12 +65,12 @@ class DQN_Agent:
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         
-        act_values = self.model.predict(state)
+        act_values = self.model.predict(state, verbose=0)
         
         return np.argmax(act_values[0])  # Returns action using policy
     
     def greedy_act(self, state):
-        act_values = self.model.predict(state)
+        act_values = self.model.predict(state, verbose=0)
         
         return np.argmax(act_values[0])  # Returns action using policy
     
@@ -85,13 +85,13 @@ class DQN_Agent:
         for state, action, reward, next_state, done in minibatch:
             
             if not done:
-                target = (reward + self.gamma * np.amax(self.target_model.predict(next_state)))
+                target = (reward + self.gamma * np.amax(self.target_model.predict(next_state, verbose=0)))
             else:
                 target = reward
                 
             # Construct the target vector as follows:
             # 1. Use the current model to output the Q-value predictions
-            target_f = self.model.predict(state)
+            target_f = self.model.predict(state, verbose=0)
             
             # 2. Rewrite the chosen action value with the computed target
             target_f[0][action] = target
