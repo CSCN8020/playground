@@ -29,15 +29,11 @@ class modelA2C:
         # from environment state
         state_tensor = tf.convert_to_tensor(state)
         state_tensor = tf.expand_dims(state_tensor, 0)
-        # TODO: use the model with the state to obtain pi and Q, what do you expect to get back?
-        # ?? = self.model(state_tensor)
+        action_probs, critic_value = self.model(state_tensor)
 
         # Sample action from action probability distribution
-        # TODO: Choose an action. 
-        # HINT: What does the policy represent? Do we need epsilon greedy here?
-        
-        # TODO: Uncomment when values are ready
-        # return action_probs, critic_value, action
+        action = np.random.choice(num_actions, p=np.squeeze(action_probs))
+        return action_probs, critic_value, action
     
     '''@brief Return the value with the max probability
     '''
@@ -59,18 +55,13 @@ class modelA2C:
             # of `log_prob` and ended up recieving a total reward = `ret`.
             # The actor must be updated so that it predicts an action that leads to
             # high rewards (compared to critic's estimate) with high probability.
-            # TODO: evaluate advantage
-
-            # TODO: Calculate the actor_loss
-            # actor_loss = ??
-            actor_losses.append(actor_loss)  # actor loss
+            diff = ret - value
+            actor_losses.append(-log_prob * diff)  # actor loss
 
             # The critic must be updated so that it predicts a better estimate of
             # the future rewards.
-            # TODO calculate crtic loss based on huber loss
-            # critic_loss = self.hubber_loss(estimate,true_value)
             critic_losses.append(
-                critic_loss
+                self.huber_loss(tf.expand_dims(value, 0), tf.expand_dims(ret, 0))
             )
 
         # Backpropagation
