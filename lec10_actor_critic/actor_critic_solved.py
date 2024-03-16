@@ -64,13 +64,13 @@ class modelA2C:
             # A = return - V(s)
             delta = ret - value
 
-            # TODO: Calculate the actor_loss
+            # Calculate the actor_loss
             actor_loss = -log_prob*delta
             actor_losses.append(actor_loss)  # actor loss
 
             # The critic must be updated so that it predicts a better estimate of
             # the future rewards.
-            # TODO calculate crtic loss based on huber loss
+            # calculate crtic loss based on huber loss
             critic_loss = self.huber_loss(tf.expand_dims(value, 0), tf.expand_dims(ret, 0))
             critic_losses.append(
                 critic_loss
