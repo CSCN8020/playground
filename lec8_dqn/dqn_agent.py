@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from collections import deque
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import Adam
@@ -12,16 +13,28 @@ class DQN_Agent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=5000)
+        self.memory = deque(maxlen=10000)
         
         # Hyperparameters
-        self.gamma = 0.95            # Discount rate
+        self.gamma = 0.985            # Discount rate
         self.epsilon = 1.0          # Exploration rate
         self.epsilon_min = 0.05      # Minimal exploration rate (epsilon-greedy)
         self.epsilon_decay = 0.995  # Decay rate for epsilon
         self.update_rate = 10000     # Number of steps until updating the target network
         
         # Construct DQN models
+        # gpus = tf.config.list_physical_devices('GPU')
+        # if gpus:
+        #     # Restrict TensorFlow to only use the first GPU
+        #     try:
+        #         tf.config.set_visible_devices(gpus[0], 'GPU')
+        #         logical_gpus = tf.config.list_logical_devices('GPU')
+        #         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
+        #     except RuntimeError as e:
+        #         # Visible devices must be set before GPUs have been initialized
+        #         print(e)
+        # else:
+        #     print("No GPUs")
         self.model = self._build_model() # Q Network
         self.target_model = self._build_model() # Target Network
         self.target_model.set_weights(self.model.get_weights())
@@ -113,6 +126,7 @@ class DQN_Agent:
     #
     def load(self, name):
         self.model.load_weights(name)
+        self.target_model.load_weights(name)
 
     #
     # Saves parameters of a trained model

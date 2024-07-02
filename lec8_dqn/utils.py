@@ -24,6 +24,13 @@ def process_frame(frame):
     
     return np.expand_dims(img.reshape(105, 80, 1), axis=0)
 
+def process_rgb(frame):
+    img = frame[::2, ::2, :]    # downsize (by 2)
+    img = (img - 128) / 128 - 1  # Normalize from -1 to 1.
+    
+    return np.expand_dims(img.reshape(105, 80, 3), axis=0)
+
+
 # GENERAL ATARI
 def to_grayscale(img):
     return np.mean(img, axis=2).astype(np.uint8)
