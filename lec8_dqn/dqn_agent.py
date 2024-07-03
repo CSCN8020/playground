@@ -10,16 +10,16 @@ class DQN_Agent:
     #
     # Initializes attributes and constructs CNN model and target_model
     #
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, gamma:float = 0.985, memory_size:int = 10000):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=10000)
+        self.memory = deque(maxlen=memory_size)
         
         # Hyperparameters
-        self.gamma = 0.985            # Discount rate
+        self.gamma = gamma            # Discount rate
         self.epsilon = 1.0          # Exploration rate
         self.epsilon_min = 0.05      # Minimal exploration rate (epsilon-greedy)
-        self.epsilon_decay = 0.995  # Decay rate for epsilon
+        self.epsilon_decay = 0.985  # Decay rate for epsilon
         self.update_rate = 10000     # Number of steps until updating the target network
         
         # Construct DQN models
@@ -98,7 +98,7 @@ class DQN_Agent:
         for state, action, reward, next_state, done in minibatch:
             
             if not done:
-                target = (reward + self.gamma * np.amax(self.target_model.predict(next_state, verbose=0)))
+                target = (reward + self.gamma * np.max(self.target_model.predict(next_state, verbose=0)))
             else:
                 target = reward
                 
